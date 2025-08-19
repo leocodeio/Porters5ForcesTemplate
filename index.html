@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Porter's Five Forces Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+      }
+
+      .main-container {
+        width: 100%;
+        max-width: 1024px;
+      }
+
+      /* Credits Header */
+      .credits-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        padding: 16px 20px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e5e5;
+      }
+
+      .credits-text {
+        font-size: 14px;
+        color: #666;
+        font-style: italic;
+      }
+
+      .header-buttons {
+        display: flex;
+        gap: 12px;
+      }
+
+      .header-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-how-to {
+        background-color: #f8f9fa;
+        color: #333;
+        border: 1px solid #ddd;
+      }
+
+      .btn-how-to:hover {
+        background-color: #e9ecef;
+      }
+
+      .btn-github {
+        background-color: #333;
+        color: white;
+      }
+
+      .btn-github:hover {
+        background-color: #555;
+      }
+
+      .title {
+        font-size: clamp(32px, 5vw, 48px);
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 64px;
+        color: #333;
+        letter-spacing: -0.025em;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 140px;
+      }
+
+      .btn-export {
+        background-color: #4caf50;
+        color: white;
+      }
+
+      .btn-export:hover {
+        background-color: #45a049;
+      }
+
+      .btn-import {
+        background-color: #2196f3;
+        color: white;
+      }
+
+      .btn-import:hover {
+        background-color: #1976d2;
+      }
+
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        cursor: pointer;
+      }
+
+      .dropdown-content a:hover {
+        background-color: #f1f1f1;
+      }
+
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      #fileInput {
+        display: none;
+      }
+
+      /* Main Diagram Container */
+      .diagram-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .row {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        width: 100%;
+      }
+
+      .row-1 {
+        justify-content: center;
+      }
+
+      .row-2 {
+        justify-content: space-between;
+        max-width: 500px;
+      }
+
+      .row-3 {
+        justify-content: space-between;
+        max-width: 500px;
+      }
+
+      /* Force Elements */
+      .force-item {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 16px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 2px solid #e5e5e5;
+        text-align: center;
+        width: 220px;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .force-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-color: #333;
+      }
+
+      .force-icon {
+        width: 60px;
+        height: 60px;
+        background-color: #333;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+      }
+
+      .force-icon span {
+        color: white;
+        font-size: 24px;
+      }
+
+      .force-label span {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+        line-height: 1.3;
+        display: block;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 30px;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 600px;
+        position: relative;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 15px;
+      }
+
+      .close:hover {
+        color: #333;
+      }
+
+      .modal h2 {
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 24px;
+        padding-right: 30px;
+      }
+
+      .modal textarea {
+        width: 100%;
+        height: 300px;
+        padding: 15px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        resize: vertical;
+        box-sizing: border-box;
+      }
+
+      .modal textarea:focus {
+        outline: none;
+        border-color: #4caf50;
+      }
+
+      .save-btn {
+        background-color: #4caf50;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 15px;
+        float: right;
+      }
+
+      .save-btn:hover {
+        background-color: #45a049;
+      }
+
+      .footer-note {
+        text-align: center;
+        margin-top: 64px;
+      }
+
+      .footer-note p {
+        color: #666;
+        font-size: 14px;
+      }
+
+      @media (min-width: 768px) {
+        .footer-note p {
+          font-size: 16px;
+        }
+      }
+
+      /* How-to modal specific styles */
+      .howto-content {
+        line-height: 1.6;
+      }
+
+      .howto-content h3 {
+        color: #333;
+        margin: 20px 0 10px 0;
+        font-size: 18px;
+      }
+
+      .howto-content p {
+        margin-bottom: 12px;
+        color: #555;
+      }
+
+      .howto-content ol {
+        margin-left: 20px;
+        margin-bottom: 15px;
+      }
+
+      .howto-content li {
+        margin-bottom: 8px;
+        color: #555;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        body {
+          padding: 16px;
+        }
+
+        .credits-header {
+          flex-direction: column;
+          gap: 12px;
+          text-align: center;
+        }
+
+        .header-buttons {
+          justify-content: center;
+        }
+
+        .diagram-container {
+          gap: 16px;
+          padding: 16px 10px;
+        }
+
+        .row {
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .force-item {
+          width: 280px;
+          padding: 12px;
+        }
+
+        .force-icon {
+          width: 50px;
+          height: 50px;
+        }
+
+        .force-icon span {
+          font-size: 20px;
+        }
+
+        .force-label span {
+          font-size: 12px;
+        }
+
+        .modal-content {
+          width: 95%;
+          margin: 10% auto;
+          padding: 20px;
+        }
+
+        .btn {
+          padding: 10px 20px;
+          font-size: 14px;
+          min-width: 120px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <!-- Credits Header -->
+      <div class="credits-header">
+        <div class="credits-text">
+          Made with ❤️ by Sonnet 4, prompted, debugged and deployed by Harsha
+        </div>
+        <div class="header-buttons">
+          <button class="header-btn btn-how-to" onclick="openHowToModal()">How to Use</button>
+          <a href="https://github.com/leocodeio/Porters5ForcesTemplate.git" target="_blank" class="header-btn btn-github">GitHub</a>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <h1 class="title">PORTER'S FIVE FORCES ANALYSIS</h1>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="dropdown">
+          <button class="btn btn-export">Export ▼</button>
+          <div class="dropdown-content">
+            <a onclick="exportToPDF()">Export PDF</a>
+            <a onclick="exportToJSON()">Export JSON</a>
+          </div>
+        </div>
+        <button
+          class="btn btn-import"
+          onclick="document.getElementById('fileInput').click()"
+        >
+          Import JSON
+        </button>
+        <input
+          type="file"
+          id="fileInput"
+          accept=".json"
+          onchange="importFromJSON(event)"
+        />
+      </div>
+
+      <!-- Main Diagram Container -->
+      <div class="diagram-container" id="diagram-container">
+        <!-- Row 1: Top Force -->
+        <div class="row row-1">
+          <div class="force-item" onclick="openModal('newEntrant')">
+            <div class="force-icon">
+              <span>👥</span>
+            </div>
+            <div class="force-label">
+              <span>POTENTIAL NEW ENTRANT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Side Forces -->
+        <div class="row row-2">
+          <div class="force-item" onclick="openModal('suppliers')">
+            <div class="force-icon">
+              <span>⚙️</span>
+            </div>
+            <div class="force-label">
+              <span>POWER OF SUPPLIERS</span>
+            </div>
+          </div>
+
+          <div class="force-item" onclick="openModal('buyers')">
+            <div class="force-icon">
+              <span>🤝</span>
+            </div>
+            <div class="force-label">
+              <span>POWER OF BUYERS</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Bottom Forces -->
+        <div class="row row-3">
+          <div class="force-item" onclick="openModal('competition')">
+            <div class="force-icon">
+              <span>🏆</span>
+            </div>
+            <div class="force-label">
+              <span>COMPETITION IN THE INDUSTRY</span>
+            </div>
+          </div>
+
+          <div class="force-item" onclick="openModal('substitutes')">
+            <div class="force-icon">
+              <span>🔄</span>
+            </div>
+            <div class="force-label">
+              <span>AVAILABILITY OF SUBSTITUTES</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Note -->
+      <div class="footer-note">
+        <p>Interactive business strategy analysis framework</p>
+      </div>
+    </div>
+
+    <!-- Analysis Modal -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title"></h2>
+        <textarea
+          id="modal-textarea"
+          placeholder="Enter your analysis for this force..."
+        ></textarea>
+        <button class="save-btn" onclick="saveContent()">Save</button>
+      </div>
+    </div>
+
+    <!-- How To Use Modal -->
+    <div id="howto-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeHowToModal()">&times;</span>
+        <h2>How to Use Porter's Five Forces Analysis</h2>
+        <div class="howto-content">
+          <h3>🚀 Getting Started</h3>
+          <ol>
+            <li>Click on any of the five force cards to open the analysis modal</li>
+            <li>Enter your detailed analysis for each force in the text area</li>
+            <li>Click "Save" to store your analysis (automatically saved to browser)</li>
+            <li>Repeat for all five forces to complete your analysis</li>
+          </ol>
+
+          <h3>📊 The Five Forces</h3>
+          <p><strong>Potential New Entrants:</strong> Analyze barriers to entry, capital requirements, brand loyalty, and regulatory factors that could prevent new competitors from entering your market.</p>
+          
+          <p><strong>Power of Suppliers:</strong> Evaluate supplier concentration, switching costs, availability of substitutes for supplier products, and supplier forward integration threats.</p>
+          
+          <p><strong>Power of Buyers:</strong> Assess buyer concentration, price sensitivity, switching costs, and buyer backward integration potential.</p>
+          
+          <p><strong>Availability of Substitutes:</strong> Identify alternative products or services that could replace your offering and analyze their price-performance trade-offs.</p>
+          
+          <p><strong>Competition in the Industry:</strong> Examine competitor rivalry intensity, industry growth rate, fixed costs, and differentiation levels.</p>
+
+          <h3>💾 Export & Import</h3>
+          <p><strong>PDF Export:</strong> Creates a professional document with the visual diagram and all your analysis content.</p>
+          <p><strong>JSON Export/Import:</strong> Save your analysis data for backup or sharing between devices.</p>
+
+          <h3>💡 Tips for Better Analysis</h3>
+          <ol>
+            <li>Use specific data and examples in your analysis</li>
+            <li>Consider both current and future trends</li>
+            <li>Think about how each force impacts profitability</li>
+            <li>Regular updates as market conditions change</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentForce = "";
+      let forceData = {
+        newEntrant: "",
+        suppliers: "",
+        buyers: "",
+        substitutes: "",
+        competition: "",
+      };
+
+      const forceNames = {
+        newEntrant: "Potential New Entrant",
+        suppliers: "Power of Suppliers",
+        buyers: "Power of Buyers",
+        substitutes: "Availability of Substitutes",
+        competition: "Competition in the Industry",
+      };
+
+      function loadData() {
+        const savedData = localStorage.getItem("portersFiveForces");
+        if (savedData) {
+          forceData = JSON.parse(savedData);
+        }
+      }
+
+      function saveData() {
+        localStorage.setItem("portersFiveForces", JSON.stringify(forceData));
+      }
+
+      function openModal(force) {
+        currentForce = force;
+        document.getElementById("modal-title").textContent = forceNames[force];
+        document.getElementById("modal-textarea").value =
+          forceData[force] || "";
+        document.getElementById("modal").style.display = "block";
+      }
+
+      function closeModal() {
+        document.getElementById("modal").style.display = "none";
+      }
+
+      function openHowToModal() {
+        document.getElementById("howto-modal").style.display = "block";
+      }
+
+      function closeHowToModal() {
+        document.getElementById("howto-modal").style.display = "none";
+      }
+
+      function saveContent() {
+        const content = document.getElementById("modal-textarea").value;
+        forceData[currentForce] = content;
+        saveData();
+        closeModal();
+      }
+
+      function exportToJSON() {
+        const dataStr = JSON.stringify(forceData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "porters-five-forces.json";
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function importFromJSON(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            try {
+              const imported = JSON.parse(e.target.result);
+              forceData = { ...forceData, ...imported };
+              saveData();
+              alert("Data imported successfully!");
+            } catch (error) {
+              alert(
+                "Error importing file. Please ensure it's a valid JSON file."
+              );
+            }
+          };
+          reader.readAsText(file);
+        }
+      }
+
+      async function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+
+        // Add title at the top
+        pdf.setFontSize(20);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("PORTER'S FIVE FORCES ANALYSIS", 105, 20, { align: "center" });
+
+        // First page - the interface
+        const container = document.getElementById("diagram-container");
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          backgroundColor: "#f5f5f5",
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        const imgWidth = 170;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.addImage(imgData, "PNG", 20, 35, imgWidth, imgHeight);
+
+        // Add content pages for each force
+        const forces = [
+          "newEntrant",
+          "suppliers",
+          "buyers",
+          "substitutes",
+          "competition",
+        ];
+
+        forces.forEach((force, index) => {
+          if (forceData[force] && forceData[force].trim()) {
+            pdf.addPage();
+
+            // Title
+            pdf.setFontSize(18);
+            pdf.setFont("helvetica", "bold");
+            pdf.text(forceNames[force].toUpperCase(), 20, 30);
+
+            // Content
+            pdf.setFontSize(12);
+            pdf.setFont("helvetica", "normal");
+
+            const content = forceData[force];
+            const lines = pdf.splitTextToSize(content, 170);
+
+            let y = 50;
+            lines.forEach((line) => {
+              if (y > 270) {
+                // Check if we need a new page
+                pdf.addPage();
+                y = 30;
+              }
+              pdf.text(line, 20, y);
+              y += 7;
+            });
+          }
+        });
+
+        pdf.save("porters-five-forces-analysis.pdf");
+      }
+
+      // Close modals when clicking outside
+      window.onclick = function (event) {
+        const modal = document.getElementById("modal");
+        const howtoModal = document.getElementById("howto-modal");
+        if (event.target === modal) {
+          closeModal();
+        }
+        if (event.target === howtoModal) {
+          closeHowToModal();
+        }
+      };
+
+      // Load data on page load
+      loadData();
+    </script>
+  </body>
+</html>
